@@ -20,6 +20,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+
+        <service android:name=".BackgroundOperationsManagerService" android:enabled="true" android:process="gov.telaviv.testworkmanager" />
+
+        <receiver android:name=".AlarmBroadCastReceiver"
+            android:enabled="true"
+            android:process="gov.telaviv.testworkmanager"/>
+
     </application>
+
 
 </manifest>

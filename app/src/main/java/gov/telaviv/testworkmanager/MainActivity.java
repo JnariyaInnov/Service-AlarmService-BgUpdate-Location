@@ -1,8 +1,12 @@
 package gov.telaviv.testworkmanager;
 
 import android.Manifest;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ProcessLifecycleOwner;
+import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.support.annotation.Nullable;
@@ -43,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
     private Button startButton;
     private Button stopButton;
     private UUID uuuidWorkRequest;
+    public final static int ALARM_REQUEST_CODE = 123;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -139,62 +144,65 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onClick(View v) {
-            if (uuuidWorkRequest == null) {
-                Constraints constraints = new Constraints.Builder()
-                        .setRequiresBatteryNotLow(true)
-                        .build();
-                PeriodicWorkRequest myWorkRequest = new PeriodicWorkRequest.Builder(GpsWorker.class, 16, TimeUnit.MINUTES) //, 15, TimeUnit.MINUTES)
-                        // .setConstraints(constraints)
-                        .addTag(GPS_WORK_TAG)
-                        .build();
 
-                // WorkManager.getInstance().enqueueUniquePeriodicWork(UNIQUE_PERIODIC_GPS, ExistingPeriodicWorkPolicy.REPLACE, myWorkRequest);
-                WorkManager.getInstance().enqueue(myWorkRequest);
+            setAlarm(MainActivity.this);
 
-                uuuidWorkRequest = myWorkRequest.getId();
-                AppUtils.setPreferences(getApplicationContext(), UUID_TAG, uuuidWorkRequest.toString());
-                startButton.setEnabled(false);
-                WorkManager.getInstance().getWorkInfoById(uuuidWorkRequest).addListener(
-                        new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    WorkInfo workInfo = WorkManager.getInstance().getWorkInfoById(uuuidWorkRequest).get();
-                                    if (workInfo != null) {
-                                        Log.i("Listener", "Run in Listener: WorkInfo State=" + workInfo.getState().name());
-                                        if (workInfo.getState().isFinished()) {
-                                            if (workInfo.getState() == WorkInfo.State.SUCCEEDED) {
-                                                updateLogText(workInfo.getOutputData());
-                                            } else {
-                                                Toast.makeText(MainActivity.this, "Finished state: " + workInfo.getState().name(), Toast.LENGTH_LONG).show();
-                                            }
-                                        }
-                                    }
-                                } catch (ExecutionException e) {
-                                    e.printStackTrace();
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                        },
-                        getMainExecutor()
-                );
-                WorkManager.getInstance().getWorkInfoByIdLiveData(myWorkRequest.getId()).observe(ProcessLifecycleOwner.get(), new Observer<WorkInfo>() {
-                    @Override
-                    public void onChanged(@Nullable WorkInfo workInfo) {
-                        if (workInfo != null) {
-                            Log.i("WorkInfoById", "WorkInfo 1 State=" + workInfo.getState().name());
-                            if (workInfo.getState().isFinished()) {
-                                if (workInfo.getState() == WorkInfo.State.SUCCEEDED) {
-                                    updateLogText(workInfo.getOutputData());
-                                } else {
-                                    Toast.makeText(MainActivity.this, "Finished state: " + workInfo.getState().name(), Toast.LENGTH_LONG).show();
-                                }
-                            }
-                        }
-                    }
-                });
-            }
+//            if (uuuidWorkRequest == null) {
+//                Constraints constraints = new Constraints.Builder()
+//                        .setRequiresBatteryNotLow(true)
+//                        .build();
+//                PeriodicWorkRequest myWorkRequest = new PeriodicWorkRequest.Builder(GpsWorker.class, 16, TimeUnit.MINUTES) //, 15, TimeUnit.MINUTES)
+//                        // .setConstraints(constraints)
+//                        .addTag(GPS_WORK_TAG)
+//                        .build();
+//
+//                // WorkManager.getInstance().enqueueUniquePeriodicWork(UNIQUE_PERIODIC_GPS, ExistingPeriodicWorkPolicy.REPLACE, myWorkRequest);
+//                WorkManager.getInstance().enqueue(myWorkRequest);
+//
+//                uuuidWorkRequest = myWorkRequest.getId();
+//                AppUtils.setPreferences(getApplicationContext(), UUID_TAG, uuuidWorkRequest.toString());
+//                startButton.setEnabled(false);
+//                WorkManager.getInstance().getWorkInfoById(uuuidWorkRequest).addListener(
+//                        new Runnable() {
+//                            @Override
+//                            public void run() {
+//                                try {
+//                                    WorkInfo workInfo = WorkManager.getInstance().getWorkInfoById(uuuidWorkRequest).get();
+//                                    if (workInfo != null) {
+//                                        Log.i("Listener", "Run in Listener: WorkInfo State=" + workInfo.getState().name());
+//                                        if (workInfo.getState().isFinished()) {
+//                                            if (workInfo.getState() == WorkInfo.State.SUCCEEDED) {
+//                                                updateLogText(workInfo.getOutputData());
+//                                            } else {
+//                                                Toast.makeText(MainActivity.this, "Finished state: " + workInfo.getState().name(), Toast.LENGTH_LONG).show();
+//                                            }
+//                                        }
+//                                    }
+//                                } catch (ExecutionException e) {
+//                                    e.printStackTrace();
+//                                } catch (InterruptedException e) {
+//                                    e.printStackTrace();
+//                                }
+//                            }
+//                        },
+//                        getMainExecutor()
+//                );
+//                WorkManager.getInstance().getWorkInfoByIdLiveData(myWorkRequest.getId()).observe(ProcessLifecycleOwner.get(), new Observer<WorkInfo>() {
+//                    @Override
+//                    public void onChanged(@Nullable WorkInfo workInfo) {
+//                        if (workInfo != null) {
+//                            Log.i("WorkInfoById", "WorkInfo 1 State=" + workInfo.getState().name());
+//                            if (workInfo.getState().isFinished()) {
+//                                if (workInfo.getState() == WorkInfo.State.SUCCEEDED) {
+//                                    updateLogText(workInfo.getOutputData());
+//                                } else {
+//                                    Toast.makeText(MainActivity.this, "Finished state: " + workInfo.getState().name(), Toast.LENGTH_LONG).show();
+//                                }
+//                            }
+//                        }
+//                    }
+//                });
+//            }
         }
     };
 
@@ -218,6 +226,29 @@ public class MainActivity extends AppCompatActivity {
                 startButton.setEnabled(true);
         }
     };
+
+
+
+
+    public static void setAlarm(Context context) {
+
+        AlarmManager alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(context, AlarmBroadCastReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context,
+                ALARM_REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        if (Build.VERSION.SDK_INT >= 23)
+        {
+            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, 30000, pendingIntent);
+        }
+        else if (Build.VERSION.SDK_INT >= 19)
+        {
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, 30000, pendingIntent);
+        }
+        else
+        {
+            alarmManager.set(AlarmManager.RTC_WAKEUP, 30000, pendingIntent);
+        }
+    }
 
 }
 
