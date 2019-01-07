@@ -18,9 +18,8 @@ import android.util.Log;
 
 import java.util.Calendar;
 
-import androidx.work.ListenableWorker;
-
-public class BackgroundOperationsManagerService extends Service {
+@SuppressLint("RestrictedApi")
+public class BackgroundOperationsManagerService extends Service implements LocationListener {
 
 
     private final static String TAG = BackgroundOperationsManagerService.class.getSimpleName();
@@ -47,29 +46,32 @@ public class BackgroundOperationsManagerService extends Service {
                 if(mLocationManager == null)
                     mLocationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
                 Log.i(TAG, "startWork  ==== LocationManager ====" );
-                mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, mLocationListener);
+                mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
             }
         }
-
+        MainActivity.setAlarm(getApplicationContext(), true);
         return super.onStartCommand(intent, flags, startId);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mLocationManager.removeUpdates(this);
     }
 
 
 
-    @SuppressLint("RestrictedApi")
-    private LocationListener mLocationListener = new LocationListener() {
+
         @Override
         public void onLocationChanged(Location location) {
             Log.i(TAG, "Update GPS Location: accuracy="+location.getAccuracy());
-            mLocationManager.removeUpdates(mLocationListener);
+            mLocationManager.removeUpdates(this);
             String str = String.format("%f : %f | %s\n", location.getLatitude(),
                     location.getLongitude(), AppUtils.dateFormat(Calendar.getInstance().getTime(), "dd/MM HH:mm"));
             Log.i(TAG, str);
             String log = AppUtils.getPreferences(BackgroundOperationsManagerService.this.getApplicationContext(),MainActivity.POINTS_LOG);
             AppUtils.setPreferences(BackgroundOperationsManagerService.this.getApplicationContext(), MainActivity.POINTS_LOG, str+log);
-
-
-
+            stopSelf();
         }
 
         @Override
@@ -85,9 +87,11 @@ public class BackgroundOperationsManagerService extends Service {
         @Override
         public void onProviderDisabled(String s) {
             Log.i(TAG, "onProviderDisabled: "+s);
-            mLocationManager.removeUpdates(mLocationListener);
+            mLocationManager.removeUpdates(this);
+            stopSelf();
         }
-    };
+
+
     static boolean isProviderEnabled(Context context) {
         Log.i(TAG, "isProviderEnabled" );
         LocationManager lm = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);

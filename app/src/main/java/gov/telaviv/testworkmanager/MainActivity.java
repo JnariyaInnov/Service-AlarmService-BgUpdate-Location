@@ -3,17 +3,14 @@ package gov.telaviv.testworkmanager;
 import android.Manifest;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
-import android.arch.lifecycle.Observer;
-import android.arch.lifecycle.ProcessLifecycleOwner;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
-import android.support.annotation.Nullable;
-import android.support.v4.content.ContextCompat;
+import android.os.PowerManager;
+import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.View;
@@ -25,19 +22,16 @@ import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.TedPermission;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.TimeUnit;
 
-import androidx.work.Constraints;
-import androidx.work.Data;
-import androidx.work.PeriodicWorkRequest;
-import androidx.work.WorkInfo;
-import androidx.work.WorkManager;
+
+//import androidx.work.Data;
+//import androidx.work.WorkManager;
 
 public class MainActivity extends AppCompatActivity {
 
+    private final static String TAG = MainActivity.class.getSimpleName();
     private final static String GPS_WORK_TAG = "gps_work";
     private final static String UNIQUE_PERIODIC_GPS = "uniquePeriodicGpsWork";
     public final static String LOG_POINT_DATA = "data_log__";
@@ -61,6 +55,19 @@ public class MainActivity extends AppCompatActivity {
         stopButton = findViewById(R.id.stopButton);
         startButton.setOnClickListener(startButtonListener);
         stopButton.setOnClickListener(stopButtonListener);
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            Intent intent = new Intent();
+            String packageName = getPackageName();
+            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+            if (pm.isIgnoringBatteryOptimizations(packageName))
+                intent.setAction(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
+            else {
+                intent.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+                intent.setData(Uri.parse("package:" + packageName));
+            }
+            startActivity(intent);
+        }
     }
 
     @Override
@@ -86,57 +93,62 @@ public class MainActivity extends AppCompatActivity {
         } else {
             enableGpsWorks();
         }
+
+
     }
 
     private void enableGpsWorks() {
-        String uuuidStr = AppUtils.getPreferences(getApplicationContext(), UUID_TAG);
-        if (!TextUtils.isEmpty(uuuidStr))
-            uuuidWorkRequest = UUID.fromString(uuuidStr);
-        if (uuuidWorkRequest == null)
-            startButton.setEnabled(true);
-        else {
-            WorkManager.getInstance().getWorkInfoById(uuuidWorkRequest).addListener(
-                    new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                WorkInfo workInfo = WorkManager.getInstance().getWorkInfoById(uuuidWorkRequest).get();
-                                if (workInfo != null) {
-                                    Log.i("Listener", "Run in Listener: WorkInfo 2 State=" + workInfo.getState().name());
-                                    if (workInfo.getState().isFinished()) {
-                                        if (workInfo.getState() == WorkInfo.State.SUCCEEDED) {
-                                            updateLogText(workInfo.getOutputData());
-                                        } else {
-                                            Toast.makeText(MainActivity.this, "Finished state: " + workInfo.getState().name(), Toast.LENGTH_LONG).show();
-                                        }
-                                    }
-                                }
-                            } catch (ExecutionException e) {
-                                e.printStackTrace();
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    },
-                    getMainExecutor()
-            );
 
-            WorkManager.getInstance().getWorkInfoByIdLiveData(uuuidWorkRequest).observe(ProcessLifecycleOwner.get(), new Observer<WorkInfo>() {
-                @Override
-                public void onChanged(@Nullable WorkInfo workInfo) {
-                    if (workInfo != null) {
-                        Log.i("WorkInfoById", "WorkInfo 2 State=" + workInfo.getState().name());
-                        if (workInfo.getState().isFinished()) {
-                            if (workInfo.getState() == WorkInfo.State.SUCCEEDED) {
-                                updateLogText(workInfo.getOutputData());
-                            } else {
-                                Toast.makeText(MainActivity.this, "Finished state: " + workInfo.getState().name(), Toast.LENGTH_LONG).show();
-                            }
-                        }
-                    }
-                }
-            });
-        }
+
+
+//        String uuuidStr = AppUtils.getPreferences(getApplicationContext(), UUID_TAG);
+//        if (!TextUtils.isEmpty(uuuidStr))
+//            uuuidWorkRequest = UUID.fromString(uuuidStr);
+//        if (uuuidWorkRequest == null)
+//            startButton.setEnabled(true);
+//        else {
+//            WorkManager.getInstance().getWorkInfoById(uuuidWorkRequest).addListener(
+//                    new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            try {
+//                                WorkInfo workInfo = WorkManager.getInstance().getWorkInfoById(uuuidWorkRequest).get();
+//                                if (workInfo != null) {
+//                                    Log.i("Listener", "Run in Listener: WorkInfo 2 State=" + workInfo.getState().name());
+//                                    if (workInfo.getState().isFinished()) {
+//                                        if (workInfo.getState() == WorkInfo.State.SUCCEEDED) {
+//                                            updateLogText(workInfo.getOutputData());
+//                                        } else {
+//                                            Toast.makeText(MainActivity.this, "Finished state: " + workInfo.getState().name(), Toast.LENGTH_LONG).show();
+//                                        }
+//                                    }
+//                                }
+//                            } catch (ExecutionException e) {
+//                                e.printStackTrace();
+//                            } catch (InterruptedException e) {
+//                                e.printStackTrace();
+//                            }
+//                        }
+//                    },
+//                    getMainExecutor()
+//            );
+//
+//            WorkManager.getInstance().getWorkInfoByIdLiveData(uuuidWorkRequest).observe(ProcessLifecycleOwner.get(), new Observer<WorkInfo>() {
+//                @Override
+//                public void onChanged(@Nullable WorkInfo workInfo) {
+//                    if (workInfo != null) {
+//                        Log.i("WorkInfoById", "WorkInfo 2 State=" + workInfo.getState().name());
+//                        if (workInfo.getState().isFinished()) {
+//                            if (workInfo.getState() == WorkInfo.State.SUCCEEDED) {
+//                                updateLogText(workInfo.getOutputData());
+//                            } else {
+//                                Toast.makeText(MainActivity.this, "Finished state: " + workInfo.getState().name(), Toast.LENGTH_LONG).show();
+//                            }
+//                        }
+//                    }
+//                }
+//            });
+//        }
 
     }
 
@@ -145,7 +157,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onClick(View v) {
 
-            setAlarm(MainActivity.this);
+            setAlarm(MainActivity.this, false);
 
 //            if (uuuidWorkRequest == null) {
 //                Constraints constraints = new Constraints.Builder()
@@ -206,23 +218,29 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private void updateLogText(Data data){
-        if(!isFinishing()) {
-            String str = data.getString(LOG_POINT_DATA);
-            logTv.setText(str + logTv.getText().toString());
-        }
-    }
+//    private void updateLogText(Data data){
+//        if(!isFinishing()) {
+//            String str = data.getString(LOG_POINT_DATA);
+//            logTv.setText(str + logTv.getText().toString());
+//        }
+//    }
 
     private View.OnClickListener stopButtonListener = new View.OnClickListener() {
 
         @Override
         public void onClick(View v) {
-            if (uuuidWorkRequest != null)
-                WorkManager.getInstance().cancelAllWorkByTag(GPS_WORK_TAG);
-            uuuidWorkRequest = null;
-            AppUtils.setPreferences(getApplicationContext(), UUID_TAG, "");
-            if (ContextCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
-                    ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+
+            Intent intent = new Intent(getApplicationContext(), AlarmBroadCastReceiver.class);
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(),
+                    ALARM_REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            AlarmManager alarmManager = (AlarmManager)getApplicationContext().getSystemService(Context.ALARM_SERVICE);
+            alarmManager.cancel(pendingIntent);
+//            if (uuuidWorkRequest != null)
+//                WorkManager.getInstance().cancelAllWorkByTag(GPS_WORK_TAG);
+//            uuuidWorkRequest = null;
+//            AppUtils.setPreferences(getApplicationContext(), UUID_TAG, "");
+//            if (ContextCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+//                    ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
                 startButton.setEnabled(true);
         }
     };
@@ -230,24 +248,40 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    public static void setAlarm(Context context) {
+    public static void setAlarm(Context context, boolean flag) {
 
+        Log.d(TAG, "setAlarm ");
         AlarmManager alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(context, AlarmBroadCastReceiver.class);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context,
                 ALARM_REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(System.currentTimeMillis());
+        if(flag) {
+            calendar.add(Calendar.MINUTE, 15);
+        }
+        else {
+            calendar.add(Calendar.SECOND, 20);
+        }
+
+//        alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_FIFTEEN_MINUTES, pendingIntent);
+
         if (Build.VERSION.SDK_INT >= 23)
         {
-            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, 30000, pendingIntent);
+            Log.d(TAG, "setAlarm setExactAndAllowWhileIdle");
+            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
         }
         else if (Build.VERSION.SDK_INT >= 19)
         {
-            alarmManager.setExact(AlarmManager.RTC_WAKEUP, 30000, pendingIntent);
+            Log.d(TAG, "setAlarm setExact");
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
         }
         else
         {
-            alarmManager.set(AlarmManager.RTC_WAKEUP, 30000, pendingIntent);
+            Log.d(TAG, "setAlarm set");
+            alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
         }
+
     }
 
 }

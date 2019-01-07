@@ -35,7 +35,7 @@
         android:layout_marginLeft="24dp"
         android:layout_marginBottom="24dp"
         android:textSize="15sp"
-        android:enabled="false"
+        android:enabled="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         android:text="start"/>
