@@ -16,7 +16,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.TedPermission;
@@ -43,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
     private UUID uuuidWorkRequest;
     public final static int ALARM_REQUEST_CODE = 123;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,19 +55,22 @@ public class MainActivity extends AppCompatActivity {
         stopButton = findViewById(R.id.stopButton);
         startButton.setOnClickListener(startButtonListener);
         stopButton.setOnClickListener(stopButtonListener);
-
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             Intent intent = new Intent();
             String packageName = getPackageName();
             PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-            if (pm.isIgnoringBatteryOptimizations(packageName))
-                intent.setAction(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
+            if (pm.isIgnoringBatteryOptimizations(packageName)) {
+                //     intent.setAction(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
+                // startActivity(intent);
+            }
             else {
                 intent.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
                 intent.setData(Uri.parse("package:" + packageName));
+                startActivity(intent);
             }
-            startActivity(intent);
+
         }
+
     }
 
     @Override
@@ -89,16 +92,14 @@ public class MainActivity extends AppCompatActivity {
 
                         }
                     })
-                    .setPermissions(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION).check();
+                    .setPermissions(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION /*, Manifest.permission.WAKE_LOCK*/).check();
         } else {
             enableGpsWorks();
         }
 
-
     }
 
     private void enableGpsWorks() {
-
 
 
 //        String uuuidStr = AppUtils.getPreferences(getApplicationContext(), UUID_TAG);
@@ -156,6 +157,14 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onClick(View v) {
+
+//            Intent intentServer = new Intent(getApplicationContext(), MyForegroundService.class);
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//                startForegroundService(intentServer);
+//            }
+//            else {
+//                startService(intentServer);
+//            }
 
             setAlarm(MainActivity.this, false);
 
@@ -229,19 +238,23 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onClick(View v) {
+//            Intent intentServer = new Intent(getApplicationContext(), MyForegroundService.class);
+//            stopService(intentServer);
 
             Intent intent = new Intent(getApplicationContext(), AlarmBroadCastReceiver.class);
             PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(),
                     ALARM_REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT);
             AlarmManager alarmManager = (AlarmManager)getApplicationContext().getSystemService(Context.ALARM_SERVICE);
             alarmManager.cancel(pendingIntent);
+
+
 //            if (uuuidWorkRequest != null)
 //                WorkManager.getInstance().cancelAllWorkByTag(GPS_WORK_TAG);
 //            uuuidWorkRequest = null;
 //            AppUtils.setPreferences(getApplicationContext(), UUID_TAG, "");
 //            if (ContextCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
 //                    ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
-                startButton.setEnabled(true);
+//                startButton.setEnabled(true);
         }
     };
 
@@ -258,27 +271,27 @@ public class MainActivity extends AppCompatActivity {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(System.currentTimeMillis());
         if(flag) {
-            calendar.add(Calendar.MINUTE, 15);
+            calendar.add(Calendar.MINUTE, 1);
         }
         else {
-            calendar.add(Calendar.SECOND, 20);
+            calendar.add(Calendar.SECOND, 15);
         }
 
 //        alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_FIFTEEN_MINUTES, pendingIntent);
 
         if (Build.VERSION.SDK_INT >= 23)
         {
-            Log.d(TAG, "setAlarm setExactAndAllowWhileIdle");
-            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+            Log.d(TAG, "setAlarm setExactAndAllowWhileIdle: " + (calendar.getTimeInMillis() - System.currentTimeMillis()));
+            alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
         }
         else if (Build.VERSION.SDK_INT >= 19)
         {
-            Log.d(TAG, "setAlarm setExact");
+            Log.d(TAG, "setAlarm setExact: "+ (calendar.getTimeInMillis() - System.currentTimeMillis()));
             alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
         }
         else
         {
-            Log.d(TAG, "setAlarm set");
+            Log.d(TAG, "setAlarm setExact: " + (calendar.getTimeInMillis() - System.currentTimeMillis()));
             alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
         }
 
