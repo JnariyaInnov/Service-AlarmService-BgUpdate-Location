@@ -37,21 +37,23 @@ public class BackgroundOperationsManagerService extends Service implements Locat
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG, "onStartCommand" );
 
+        buildGoogleApiClient();
+        MainActivity.setAlarm(getApplicationContext(), true);
 
-            if(isProviderEnabled(getApplicationContext())) {
-                Log.i(TAG, "onStartCommand isProviderEnabled=true" );
-                buildGoogleApiClient();
-//                if(mLocationManager == null)
-//                    mLocationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
-//                Log.i(TAG, "startGpsLocationUpdates:  ==== requestLocationUpdates ====" );
-//                mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
-//                //mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
-
-                MainActivity.setAlarm(getApplicationContext(), true);
-            }
-            else {
-                MainActivity.setAlarm(getApplicationContext(), false);
-            }
+//            if(isProviderEnabled(getApplicationContext())) {
+//                Log.i(TAG, "onStartCommand isProviderEnabled=true" );
+//                buildGoogleApiClient();
+////                if(mLocationManager == null)
+////                    mLocationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
+////                Log.i(TAG, "startGpsLocationUpdates:  ==== requestLocationUpdates ====" );
+////                mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+////                //mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
+//
+//                MainActivity.setAlarm(getApplicationContext(), true);
+//            }
+//            else {
+//                MainActivity.setAlarm(getApplicationContext(), false);
+//            }
 
         return  super.onStartCommand(intent, flags, startId);
     }
@@ -96,13 +98,13 @@ public class BackgroundOperationsManagerService extends Service implements Locat
                 ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED);
     }
 
-    private static boolean isProviderEnabled(Context context) {
-        LocationManager lm = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-        boolean result = lm.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER)
-                && lm.isProviderEnabled(android.location.LocationManager.NETWORK_PROVIDER);
-        Log.i(TAG, "isProviderEnabled "+result );
-        return result;
-    }
+//    private static boolean isProviderEnabled(Context context) {
+//        LocationManager lm = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+//        boolean result = lm.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER)
+//                && lm.isProviderEnabled(android.location.LocationManager.NETWORK_PROVIDER);
+//        Log.i(TAG, "isProviderEnabled "+result );
+//        return result;
+//    }
 
     @Override
     public void onLocationChanged(Location location) {

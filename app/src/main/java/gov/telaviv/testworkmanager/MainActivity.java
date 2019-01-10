@@ -264,10 +264,13 @@ public class MainActivity extends AppCompatActivity {
     public static void setAlarm(Context context, boolean flag) {
 
         Log.d(TAG, "setAlarm ");
+
         AlarmManager alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
+
         Intent intent = new Intent(context, AlarmBroadCastReceiver.class);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context,
                 ALARM_REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(System.currentTimeMillis());
         if(flag) {
