@@ -102,54 +102,6 @@ public class MainActivity extends AppCompatActivity {
     private void enableGpsWorks() {
 
 
-//        String uuuidStr = AppUtils.getPreferences(getApplicationContext(), UUID_TAG);
-//        if (!TextUtils.isEmpty(uuuidStr))
-//            uuuidWorkRequest = UUID.fromString(uuuidStr);
-//        if (uuuidWorkRequest == null)
-//            startButton.setEnabled(true);
-//        else {
-//            WorkManager.getInstance().getWorkInfoById(uuuidWorkRequest).addListener(
-//                    new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            try {
-//                                WorkInfo workInfo = WorkManager.getInstance().getWorkInfoById(uuuidWorkRequest).get();
-//                                if (workInfo != null) {
-//                                    Log.i("Listener", "Run in Listener: WorkInfo 2 State=" + workInfo.getState().name());
-//                                    if (workInfo.getState().isFinished()) {
-//                                        if (workInfo.getState() == WorkInfo.State.SUCCEEDED) {
-//                                            updateLogText(workInfo.getOutputData());
-//                                        } else {
-//                                            Toast.makeText(MainActivity.this, "Finished state: " + workInfo.getState().name(), Toast.LENGTH_LONG).show();
-//                                        }
-//                                    }
-//                                }
-//                            } catch (ExecutionException e) {
-//                                e.printStackTrace();
-//                            } catch (InterruptedException e) {
-//                                e.printStackTrace();
-//                            }
-//                        }
-//                    },
-//                    getMainExecutor()
-//            );
-//
-//            WorkManager.getInstance().getWorkInfoByIdLiveData(uuuidWorkRequest).observe(ProcessLifecycleOwner.get(), new Observer<WorkInfo>() {
-//                @Override
-//                public void onChanged(@Nullable WorkInfo workInfo) {
-//                    if (workInfo != null) {
-//                        Log.i("WorkInfoById", "WorkInfo 2 State=" + workInfo.getState().name());
-//                        if (workInfo.getState().isFinished()) {
-//                            if (workInfo.getState() == WorkInfo.State.SUCCEEDED) {
-//                                updateLogText(workInfo.getOutputData());
-//                            } else {
-//                                Toast.makeText(MainActivity.this, "Finished state: " + workInfo.getState().name(), Toast.LENGTH_LONG).show();
-//                            }
-//                        }
-//                    }
-//                }
-//            });
-//        }
 
     }
 
@@ -158,88 +110,18 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onClick(View v) {
 
-//            Intent intentServer = new Intent(getApplicationContext(), MyForegroundService.class);
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//                startForegroundService(intentServer);
-//            }
-//            else {
-//                startService(intentServer);
-//            }
 
             setAlarm(MainActivity.this, false);
 
-//            if (uuuidWorkRequest == null) {
-//                Constraints constraints = new Constraints.Builder()
-//                        .setRequiresBatteryNotLow(true)
-//                        .build();
-//                PeriodicWorkRequest myWorkRequest = new PeriodicWorkRequest.Builder(GpsWorker.class, 16, TimeUnit.MINUTES) //, 15, TimeUnit.MINUTES)
-//                        // .setConstraints(constraints)
-//                        .addTag(GPS_WORK_TAG)
-//                        .build();
-//
-//                // WorkManager.getInstance().enqueueUniquePeriodicWork(UNIQUE_PERIODIC_GPS, ExistingPeriodicWorkPolicy.REPLACE, myWorkRequest);
-//                WorkManager.getInstance().enqueue(myWorkRequest);
-//
-//                uuuidWorkRequest = myWorkRequest.getId();
-//                AppUtils.setPreferences(getApplicationContext(), UUID_TAG, uuuidWorkRequest.toString());
-//                startButton.setEnabled(false);
-//                WorkManager.getInstance().getWorkInfoById(uuuidWorkRequest).addListener(
-//                        new Runnable() {
-//                            @Override
-//                            public void run() {
-//                                try {
-//                                    WorkInfo workInfo = WorkManager.getInstance().getWorkInfoById(uuuidWorkRequest).get();
-//                                    if (workInfo != null) {
-//                                        Log.i("Listener", "Run in Listener: WorkInfo State=" + workInfo.getState().name());
-//                                        if (workInfo.getState().isFinished()) {
-//                                            if (workInfo.getState() == WorkInfo.State.SUCCEEDED) {
-//                                                updateLogText(workInfo.getOutputData());
-//                                            } else {
-//                                                Toast.makeText(MainActivity.this, "Finished state: " + workInfo.getState().name(), Toast.LENGTH_LONG).show();
-//                                            }
-//                                        }
-//                                    }
-//                                } catch (ExecutionException e) {
-//                                    e.printStackTrace();
-//                                } catch (InterruptedException e) {
-//                                    e.printStackTrace();
-//                                }
-//                            }
-//                        },
-//                        getMainExecutor()
-//                );
-//                WorkManager.getInstance().getWorkInfoByIdLiveData(myWorkRequest.getId()).observe(ProcessLifecycleOwner.get(), new Observer<WorkInfo>() {
-//                    @Override
-//                    public void onChanged(@Nullable WorkInfo workInfo) {
-//                        if (workInfo != null) {
-//                            Log.i("WorkInfoById", "WorkInfo 1 State=" + workInfo.getState().name());
-//                            if (workInfo.getState().isFinished()) {
-//                                if (workInfo.getState() == WorkInfo.State.SUCCEEDED) {
-//                                    updateLogText(workInfo.getOutputData());
-//                                } else {
-//                                    Toast.makeText(MainActivity.this, "Finished state: " + workInfo.getState().name(), Toast.LENGTH_LONG).show();
-//                                }
-//                            }
-//                        }
-//                    }
-//                });
-//            }
+
         }
     };
 
-//    private void updateLogText(Data data){
-//        if(!isFinishing()) {
-//            String str = data.getString(LOG_POINT_DATA);
-//            logTv.setText(str + logTv.getText().toString());
-//        }
-//    }
 
     private View.OnClickListener stopButtonListener = new View.OnClickListener() {
 
         @Override
         public void onClick(View v) {
-//            Intent intentServer = new Intent(getApplicationContext(), MyForegroundService.class);
-//            stopService(intentServer);
 
             Intent intent = new Intent(getApplicationContext(), AlarmBroadCastReceiver.class);
             PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(),
@@ -247,14 +129,6 @@ public class MainActivity extends AppCompatActivity {
             AlarmManager alarmManager = (AlarmManager)getApplicationContext().getSystemService(Context.ALARM_SERVICE);
             alarmManager.cancel(pendingIntent);
 
-
-//            if (uuuidWorkRequest != null)
-//                WorkManager.getInstance().cancelAllWorkByTag(GPS_WORK_TAG);
-//            uuuidWorkRequest = null;
-//            AppUtils.setPreferences(getApplicationContext(), UUID_TAG, "");
-//            if (ContextCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
-//                    ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
-//                startButton.setEnabled(true);
         }
     };
 
@@ -301,23 +175,3 @@ public class MainActivity extends AppCompatActivity {
     }
 
 }
-
-/*
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LifecycleRegistry
-
-
- // A [LifecycleOwner] which is always in a [Lifecycle.State.STARTED] state.
-
-    class TestLifeCycleOwner : LifecycleOwner {
-        private val registry = LifecycleRegistry(this)
-
-        init {
-            registry.markState(Lifecycle.State.STARTED)
-        }
-
-        override fun getLifecycle(): Lifecycle = registry
-    }
-*/
-

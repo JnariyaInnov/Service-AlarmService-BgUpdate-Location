@@ -40,21 +40,6 @@ public class BackgroundOperationsManagerService extends Service implements Locat
         buildGoogleApiClient();
         MainActivity.setAlarm(getApplicationContext(), true);
 
-//            if(isProviderEnabled(getApplicationContext())) {
-//                Log.i(TAG, "onStartCommand isProviderEnabled=true" );
-//                buildGoogleApiClient();
-////                if(mLocationManager == null)
-////                    mLocationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
-////                Log.i(TAG, "startGpsLocationUpdates:  ==== requestLocationUpdates ====" );
-////                mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
-////                //mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
-//
-//                MainActivity.setAlarm(getApplicationContext(), true);
-//            }
-//            else {
-//                MainActivity.setAlarm(getApplicationContext(), false);
-//            }
-
         return  super.onStartCommand(intent, flags, startId);
     }
 
@@ -62,9 +47,7 @@ public class BackgroundOperationsManagerService extends Service implements Locat
     public void onDestroy() {
         super.onDestroy();
         Log.d(TAG, "onDestroy" );
-//        if(mLocationManager!=null) {
-//            mLocationManager.removeUpdates(this);
-//        }
+
         disconnectGoogleApiClient();
     }
 
@@ -98,23 +81,11 @@ public class BackgroundOperationsManagerService extends Service implements Locat
                 ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED);
     }
 
-//    private static boolean isProviderEnabled(Context context) {
-//        LocationManager lm = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-//        boolean result = lm.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER)
-//                && lm.isProviderEnabled(android.location.LocationManager.NETWORK_PROVIDER);
-//        Log.i(TAG, "isProviderEnabled "+result );
-//        return result;
-//    }
 
     @Override
     public void onLocationChanged(Location location) {
         Log.i(TAG, "Update GPS Location: accuracy="+location.getAccuracy());
 
-//        if(mLocationManager!=null)
-//            mLocationManager.removeUpdates(this);
-//        if(mGoogleApiClient!=null)
-//            LocationServices.FusedLocationApi.removeLocationUpdates(
-//                    mGoogleApiClient,  this);
 
         String str = String.format("%f : %f | %s\n",  location.getLatitude(),
                 location.getLongitude(), AppUtils.dateFormat(Calendar.getInstance().getTime(), "dd/MM HH:mm"));
@@ -148,8 +119,6 @@ public class BackgroundOperationsManagerService extends Service implements Locat
         boolean permissions = checkPermissions();
         Log.i(TAG, "onConnected: permissions="+permissions);
         if(mGoogleApiClient!=null && permissions) {
-//            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
-//            Log.i(TAG, "onConnected: === requestLocationUpdates ===");
             Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
             Log.i(TAG, "onConnected: === getLastLocation ===");
             onLocationChanged(location);
